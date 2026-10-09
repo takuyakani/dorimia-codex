@@ -1095,39 +1095,13 @@
       return url.replace(/^\/+/, '');
     }
 
-    const CATEGORY_FALLBACK_IMAGES = {
-      geography: 'static/images/scenes/generic/mountain.webp',
-      locations: 'static/images/scenes/generic/town_street.webp',
-      factions: 'static/images/scenes/generic/temple.webp',
-      timeline: 'static/images/bg_world_map.jpg',
-      magic: 'static/images/scenes/locations/loc_ancient_seal_chamber.webp',
-      culture: 'static/images/scenes/generic/tavern.webp',
-      threats: 'static/images/scenes/generic/cave.webp',
-      tales: 'static/images/scenes/generic/camp_night.webp',
-    };
-
-    const RACE_PRESET_IMAGES = {
-      race_human: 'static/images/portraits/presets/preset_warrior_human_m.webp',
-      race_elf: 'static/images/portraits/presets/preset_mage_elf_f.webp',
-      race_dwarf: 'static/images/portraits/presets/preset_ironminer_dwarf_m.webp',
-      race_halfling: 'static/images/portraits/presets/preset_mushroom_hunter_halfling_m.webp',
-      race_kobold: 'static/images/portraits/presets/preset_peddler_kobold_m.webp',
-      race_lizardman: 'static/images/portraits/presets/preset_marsh_hunter_lizardman_m.webp',
-      race_winged: 'static/images/portraits/presets/preset_knight_winged_m.webp',
-      race_orc: 'static/images/portraits/presets/preset_mercenary_orc_m.webp',
-      race_goblin: 'static/images/portraits/presets/preset_rogue_kobold_m.webp',
-      race_undead: 'static/images/portraits/presets/preset_sorcerer_revenant_m.webp',
-    };
-
     function getEntryImage(entry) {
       if (entry.image_url) {
         return resolveImageUrl(entry.image_url);
       }
-      if (entry.category === 'races') {
-        return RACE_PRESET_IMAGES[entry.id] || 'static/images/portraits/presets/preset_scholar_kobold_m.webp';
-      }
-      return CATEGORY_FALLBACK_IMAGES[entry.category] || null;
+      return null;
     }
+
 
     function loadEntries(catKey, query = '', targetEntryId = null) {
       let entries = Object.values(allEntriesMap);
