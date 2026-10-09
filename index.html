@@ -300,6 +300,9 @@
       padding: 10px 12px;
       cursor: pointer;
       transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
     .entry-card:hover {
       background: var(--bg-card-hover);
@@ -311,6 +314,20 @@
       border-color: var(--gold-bright);
       box-shadow: 0 2px 10px rgba(197, 155, 67, 0.25);
     }
+    .entry-card-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid var(--border-bronze);
+      flex-shrink: 0;
+      background: #000;
+    }
+    .entry-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+
     .cat-pill {
       display: inline-block;
       font-size: 0.68rem;
@@ -1073,6 +1090,45 @@
       loadEntries(catKey, '', targetEntryId);
     }
 
+    function resolveImageUrl(url) {
+      if (!url) return '';
+      return url.replace(/^\/+/, '');
+    }
+
+    const CATEGORY_FALLBACK_IMAGES = {
+      geography: 'static/images/scenes/generic/mountain.webp',
+      locations: 'static/images/scenes/generic/town_street.webp',
+      factions: 'static/images/scenes/generic/temple.webp',
+      timeline: 'static/images/bg_world_map.jpg',
+      magic: 'static/images/scenes/locations/loc_ancient_seal_chamber.webp',
+      culture: 'static/images/scenes/generic/tavern.webp',
+      threats: 'static/images/scenes/generic/cave.webp',
+      tales: 'static/images/scenes/generic/camp_night.webp',
+    };
+
+    const RACE_PRESET_IMAGES = {
+      race_human: 'static/images/portraits/presets/preset_warrior_human_m.webp',
+      race_elf: 'static/images/portraits/presets/preset_mage_elf_f.webp',
+      race_dwarf: 'static/images/portraits/presets/preset_ironminer_dwarf_m.webp',
+      race_halfling: 'static/images/portraits/presets/preset_mushroom_hunter_halfling_m.webp',
+      race_kobold: 'static/images/portraits/presets/preset_peddler_kobold_m.webp',
+      race_lizardman: 'static/images/portraits/presets/preset_marsh_hunter_lizardman_m.webp',
+      race_winged: 'static/images/portraits/presets/preset_knight_winged_m.webp',
+      race_orc: 'static/images/portraits/presets/preset_mercenary_orc_m.webp',
+      race_goblin: 'static/images/portraits/presets/preset_rogue_kobold_m.webp',
+      race_undead: 'static/images/portraits/presets/preset_sorcerer_revenant_m.webp',
+    };
+
+    function getEntryImage(entry) {
+      if (entry.image_url) {
+        return resolveImageUrl(entry.image_url);
+      }
+      if (entry.category === 'races') {
+        return RACE_PRESET_IMAGES[entry.id] || 'static/images/portraits/presets/preset_scholar_kobold_m.webp';
+      }
+      return CATEGORY_FALLBACK_IMAGES[entry.category] || null;
+    }
+
     function loadEntries(catKey, query = '', targetEntryId = null) {
       let entries = Object.values(allEntriesMap);
       if (catKey) {
@@ -1098,15 +1154,21 @@
         return;
       }
 
-      listEl.innerHTML = entries.map(e => `
-        <div class="entry-card ${e.id === activeEntryId ? 'active' : ''}" 
-             id="entry-card-${e.id}" 
-             onclick="selectEntry('${e.id}')">
-          <div class="entry-card-title">${escapeHtml(e.title)}</div>
-          ${e.subtitle ? `<div class="entry-card-sub">${escapeHtml(e.subtitle)}</div>` : ''}
-          <div class="entry-card-snippet">${escapeHtml(e.summary)}</div>
-        </div>
-      `).join('');
+      listEl.innerHTML = entries.map(e => {
+        const imgUrl = getEntryImage(e);
+        return `
+          <div class="entry-card ${e.id === activeEntryId ? 'active' : ''}" 
+               id="entry-card-${e.id}" 
+               onclick="selectEntry('${e.id}')">
+            ${imgUrl ? `<img src="${imgUrl}" class="entry-card-thumb" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+            <div class="entry-card-info">
+              <div class="entry-card-title">${escapeHtml(e.title)}</div>
+              ${e.subtitle ? `<div class="entry-card-sub">${escapeHtml(e.subtitle)}</div>` : ''}
+              <div class="entry-card-snippet">${escapeHtml(e.summary)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
 
       const entryToSelect = targetEntryId || (entries.length > 0 ? entries[0].id : null);
       if (entryToSelect && window.innerWidth > 860) {
@@ -1138,23 +1200,30 @@
         return;
       }
 
-      listEl.innerHTML = entries.map(e => `
-        <div class="entry-card ${e.id === activeEntryId ? 'active' : ''}" 
-             id="entry-card-${e.id}" 
-             onclick="selectEntry('${e.id}')">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
-            <span class="cat-pill">${escapeHtml(e.category_label || e.category)}</span>
+      listEl.innerHTML = entries.map(e => {
+        const imgUrl = getEntryImage(e);
+        return `
+          <div class="entry-card ${e.id === activeEntryId ? 'active' : ''}" 
+               id="entry-card-${e.id}" 
+               onclick="selectEntry('${e.id}')">
+            ${imgUrl ? `<img src="${imgUrl}" class="entry-card-thumb" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+            <div class="entry-card-info">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                <span class="cat-pill">${escapeHtml(e.category_label || e.category)}</span>
+              </div>
+              <div class="entry-card-title">${escapeHtml(e.title)}</div>
+              ${e.subtitle ? `<div class="entry-card-sub">${escapeHtml(e.subtitle)}</div>` : ''}
+              <div class="entry-card-snippet">${escapeHtml(e.summary)}</div>
+            </div>
           </div>
-          <div class="entry-card-title">${escapeHtml(e.title)}</div>
-          ${e.subtitle ? `<div class="entry-card-sub">${escapeHtml(e.subtitle)}</div>` : ''}
-          <div class="entry-card-snippet">${escapeHtml(e.summary)}</div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       if (entries.length > 0 && window.innerWidth > 860) {
         selectEntry(entries[0].id);
       }
     }
+
 
     let searchTimeout = null;
     function onSearchInput() {
@@ -1279,13 +1348,14 @@
       }
 
       let mediaHtml = '';
-      if (entry.image_url) {
-        if (entry.category === 'npcs') {
+      const imgUrl = getEntryImage(entry);
+      if (imgUrl) {
+        if (entry.category === 'npcs' || entry.category === 'races') {
           mediaHtml = `
             <div class="manuscript-npc-wrap">
-              <img src="${escapeHtml(entry.image_url)}" class="manuscript-npc-portrait" alt="${escapeHtml(entry.title)}" onerror="this.parentElement.style.display='none'">
+              <img src="${imgUrl}" class="manuscript-npc-portrait" alt="${escapeHtml(entry.title)}" onerror="this.parentElement.style.display='none'">
               <div class="manuscript-npc-meta">
-                <div style="font-size:0.8rem; color:#8a2525; font-weight:bold; margin-bottom:4px;">👤 人物肖像記録</div>
+                <div style="font-size:0.8rem; color:#8a2525; font-weight:bold; margin-bottom:4px;">👤 肖像・種族外見記録</div>
                 <div style="font-size:1.15rem; font-weight:bold; color:#3a1818;">${escapeHtml(entry.title)}</div>
                 ${entry.subtitle ? `<div style="font-size:0.85rem; color:#634731;">${escapeHtml(entry.subtitle)}</div>` : ''}
               </div>
@@ -1294,11 +1364,12 @@
         } else {
           mediaHtml = `
             <div class="manuscript-media-wrap">
-              <img src="${escapeHtml(entry.image_url)}" class="manuscript-location-img" alt="${escapeHtml(entry.title)}" onerror="this.parentElement.style.display='none'">
+              <img src="${imgUrl}" class="manuscript-location-img" alt="${escapeHtml(entry.title)}" onerror="this.parentElement.style.display='none'">
             </div>
           `;
         }
       }
+
 
       container.innerHTML = `
         <article class="manuscript">
